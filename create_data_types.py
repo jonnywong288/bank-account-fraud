@@ -9,8 +9,19 @@ nominal = ['payment_type',
  'housing_status',
  'source',
  'device_os',
- 'income',
- 'customer_age',
+ 'email_is_free',
+ 'phone_home_valid',
+ 'phone_mobile_valid',
+ 'has_other_cards',
+ 'foreign_request',
+ 'keep_alive_session']
+
+nominal_multi_category = ['payment_type',
+ 'employment_status',
+ 'housing_status',
+ 'device_os']
+
+nominal_binary = ['source',
  'email_is_free',
  'phone_home_valid',
  'phone_mobile_valid',
@@ -19,8 +30,30 @@ nominal = ['payment_type',
  'keep_alive_session']
 
 ordinal = ['income', 
- 'customer_age', 
- 'month']
+ 'customer_age']
+
+temporal = ['month']
+
+numerical_discrete = ['prev_address_months_count',
+ 'current_address_months_count', 
+ 'bank_branch_count_8w',
+ 'date_of_birth_distinct_emails_4w',
+ 'credit_risk_score',
+ 'bank_months_count',
+ 'proposed_credit_limit',
+ 'device_fraud_count',
+ 'device_distinct_emails_8w',
+ 'zip_count_4w'
+]
+numerical_continuous_bounded = ['name_email_similarity']
+
+numerical_continuous_unbounded = ['days_since_request',
+ 'intended_balcon_amount',
+ 'velocity_6h',
+ 'velocity_24h',
+ 'velocity_4w',
+ 'session_length_in_minutes'
+ ]
 
 numerical = ['name_email_similarity',
  'prev_address_months_count',
@@ -47,6 +80,16 @@ data_types['target'] = target
 data_types['nominal'] = nominal
 data_types['ordinal'] = ordinal
 data_types['numerical'] = numerical
+data_types['temporal'] = temporal
+
+
+
+data_types['numerical_discrete'] = numerical_discrete
+data_types['numerical_continuous_bounded'] = numerical_continuous_bounded
+data_types['numerical_continuous_unbounded'] = numerical_continuous_unbounded
+data_types['nominal_multi_category'] = nominal_multi_category
+data_types['nominal_binary'] = nominal_binary
+
 
 # write json file
 with open("data_types.json", "w") as json_file:
