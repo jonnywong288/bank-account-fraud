@@ -103,3 +103,29 @@ class FeatureStats:
                                             'p-value': p_values,
                                             'Log Regression coef': log_reg_coefs}).sort_values('Log Regression coef', ascending=False).set_index('Feature')
         return ordinal_variables_significance
+
+    def overview(self):
+
+        columns = []
+        dtype = []
+        minus_one_count = []
+        minus_one_percentage = []
+        unique_values = []
+
+        for i in self.df.columns:
+
+            minus_one_c = (self.df[i] == -1).sum()
+            minus_one_p = (minus_one_c/len(self.df)) * 100
+
+
+            columns.append(i)
+            dtype.append(self.df[i].dtype)
+            minus_one_count.append(minus_one_c)
+            minus_one_percentage.append(minus_one_p)
+            unique_values.append(self.df[i].nunique())
+
+        return pd.DataFrame({'Feature':columns,
+                            'dtype':dtype,
+                            '-1 Count':minus_one_count,
+                            '-1 (%)': minus_one_percentage,
+                            'unique values': unique_values}).set_index('Feature')
