@@ -129,3 +129,12 @@ class FeatureStats:
                             '-1 Count':minus_one_count,
                             '-1 (%)': minus_one_percentage,
                             'unique values': unique_values}).set_index('Feature')
+    
+
+class FeatureViz:
+    def __init__(self, df, target, dtypes):
+        self.df = df
+        self.target = target
+        with open(dtypes) as f:
+            data = json.load(f)
+        self.dtypes = data
