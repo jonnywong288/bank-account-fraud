@@ -69,7 +69,7 @@
         "device_os"
     ],
     "nominal_binary": [
-        "source",
+        "source_is_internet_not_teleapp",
         "email_is_free",
         "phone_home_valid",
         "phone_mobile_valid",

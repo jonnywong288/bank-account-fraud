@@ -21,7 +21,7 @@ nominal_multi_category = ['payment_type',
  'housing_status',
  'device_os']
 
-nominal_binary = ['source',
+nominal_binary = ['source_is_internet_not_teleapp',
  'email_is_free',
  'phone_home_valid',
  'phone_mobile_valid',
