@@ -289,8 +289,7 @@ class FeatureVisualisation:
             plt.ylabel("Fraud %")
             plt.tight_layout()
             plt.show()
-
-    
+ 
     def nominal_multi_category(self, variables):
 
         percent_fraud_total = self.df.fraud_bool.sum() / len(self.df) * 100
@@ -341,12 +340,12 @@ class FeatureVisualisation:
             # HISTOGRAM of percentage of 1s for each bin
 
             # Remove outliers similarly to boxplot above 
-            Q1 = self.df['bank_branch_count_8w'].quantile(0.25)
-            Q3 = self.df['bank_branch_count_8w'].quantile(0.75)
+            Q1 = self.df[i].quantile(0.25)
+            Q3 = self.df[i].quantile(0.75)
             IQR = Q3 - Q1
             min_ = Q1 - 1.5 * IQR
             max_ = Q3 + 1.5 * IQR
-            df_no_outliers = self.df[(self.df['bank_branch_count_8w'] <= max_) & (self.df['bank_branch_count_8w'] >= min_)]
+            df_no_outliers = self.df[(self.df[i] <= max_) & (self.df[i] >= min_)]
             data = df_no_outliers[i]  # feature of interest
             target = df_no_outliers[self.target]  # target variable
 
@@ -393,16 +392,11 @@ class FeatureVisualisation:
 
             plt.show()
 
-
-
-
-
-    def numerical_continuous_bounded(self, variables):
+    def numerical_continuous(self, variables):
         for i in variables:
             plt.figure(figsize=(10, 6))
             sns.kdeplot(data=self.df, x=i, hue=self.target, fill=True, common_norm=False, alpha=0.5)
             plt.title(f"Density Plot of {i}")
-            plt.legend(title=self.target)
             plt.show()
 
             plt.figure(figsize=(10, 6))
@@ -410,19 +404,69 @@ class FeatureVisualisation:
             plt.title(f"Boxplot of {i} by {self.target}")
             plt.show()
 
-    def numerical_continuous_unbounded(self, variables):
-        for i in variables:
             plt.figure(figsize=(10, 6))
-            sns.scatterplot(data=self.df, x=self.target, y=i, hue=self.target)
-            plt.title(f"Scatterplot of {i} by {self.target}")
-            plt.legend(title=self.target)
+            sns.boxplot(data=self.df, x=self.target, y=i, showfliers=False)
+            plt.title(f"Boxplot of {i} by {self.target} (Outliers Ignored)")
             plt.show()
 
-            plt.figure(figsize=(10, 6))
-            sns.histplot(data=self.df, x=i, hue=self.target, multiple="dodge", bins=20, kde=False)
-            plt.title(f"Histogram of {i}")
-            plt.legend(title=self.target)
+            # HISTOGRAM of percentage of 1s for each bin
+
+            # Remove outliers similarly to boxplot above 
+            Q1 = self.df[i].quantile(0.25)
+            Q3 = self.df[i].quantile(0.75)
+            IQR = Q3 - Q1
+            min_ = Q1 - 1.5 * IQR
+            max_ = Q3 + 1.5 * IQR
+            df_no_outliers = self.df[(self.df[i] <= max_) & (self.df[i] >= min_)]
+            data = df_no_outliers[i]  # feature of interest
+            target = df_no_outliers[self.target]  # target variable
+
+            # Bins for histogram
+            bins = 10
+            min_val = data.min()
+            max_val = data.max()
+            bin_edges = np.linspace(min_val, max_val, bins + 1)
+
+            # Calculate the histogram values (counts)
+            hist, bin_edges = np.histogram(data, bins=bin_edges)
+
+            # Calculate percentage of 1s for each bin
+            percent_1s = []
+            for j in range(len(bin_edges) - 1):
+                bin_start = bin_edges[j]
+                bin_end = bin_edges[j + 1]
+                
+                # Get the data points that fall within the current bin range
+                bin_mask = (data >= bin_start) & (data < bin_end)
+                
+                # Calculate the percentage of 1s in the target for this bin
+                target_in_bin = target[bin_mask]
+                percentage_1s = (target_in_bin.sum() / len(target_in_bin)) * 100 if len(target_in_bin) > 0 else 0
+                percent_1s.append(percentage_1s)
+
+            # Create the figure and axis for a single histogram
+            fig, ax_left = plt.subplots(figsize=(10, 6))
+
+            # Plot the percentage of 1s as bars
+            ax_left.bar(bin_edges[:-1] + (bin_edges[1] - bin_edges[0]) / 2, percent_1s, 
+                        width=(bin_edges[1] - bin_edges[0]) * 0.8, color='red', alpha=0.6)
+
+            # Set labels and title
+            ax_left.set_xlabel(i)
+            ax_left.set_ylabel("Percentage of positive fraud counts")
+            ax_left.set_title(f"Percentage of positive fraud counts by {i} in buckets of {bins}")
+
+            # Add bin range labels on the x-axis (lower and rotated at 45 degrees)
+            for j in range(len(bin_edges) - 1):
+                bin_range = f"[{bin_edges[j]:.2f}, {bin_edges[j + 1]:.2f}]"
+                ax_left.text(bin_edges[j] + (bin_edges[1] - bin_edges[0]) / 2, 
+                            -max(percent_1s) * 0.1, bin_range, ha='center', va='top', rotation=45)
+
             plt.show()
+    
+
+
+
 
     def ordinal(self, variables):
         for i in variables:
