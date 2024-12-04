@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
 from scipy.stats import chi2_contingency, pointbiserialr, ttest_ind, spearmanr, ks_2samp
 from sklearn.linear_model import LogisticRegression
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 pd.set_option("display.max_colwidth", None)
 
 class FeatureSignificance:
@@ -249,42 +252,199 @@ class FeatureVisualisation:
         self.df = df
         self.target = target
 
-    def calculations(self):
+    def visualisations(self):
         info_summary = {
-        "Temporal": {
-            "Primary Test/Metric": ["Spearman Correlation", "Chi-Square Test (Goodness of Fit)"],
-            "Other Techniques": ["Time bucketing", "Logistic regression"],
-            "Visualization": ["Line plots", "Heatmaps"]
-        },
-        "Ordinal": {
-        "Primary Test/Metric": ["Spearman Correlation", "Logistic Regression Coefficient"],
-        "Other Techniques": ["Ordinal encoding", "Examine monotonic trends"],
-        "Visualization": ["Bar plots", "Line plots"]
-        },
-        "Numerical Discrete": {
-            "Primary Test/Metric": ["Point-Biserial Correlation", "T-Test"],
-            "Other Techniques": ["Bucketing for Chi-Square", "Comparison of means"],
-            "Visualization": ["Boxplots", "Histograms"]
-        },
-        "Numerical Continuous (Bounded)": {
-            "Primary Test/Metric": ["Spearman Correlation", "T-Test", "K-S Test"],
-            "Other Techniques": ["Examine distributions", "Transform skewed data"],
-            "Visualization": ["Density plots", "Boxplots"]
-        },
-        "Numerical Continuous (Unbounded)": {
-            "Primary Test/Metric": ["Spearman Correlation", "T-Test", "K-S Test"],
-            "Other Techniques": ["Outlier detection", "Log transformations"],
-            "Visualization": ["Scatterplots", "Histograms"]
-        },
-        "Nominal (Multi-Category)": {
-            "Primary Test/Metric": ["Chi-Square Test of Independence (Contingency)", "Cramér’s V"],
-            "Other Techniques": ["One-hot encoding", "Clustering to reduce categories"],
-            "Visualization": ["Bar charts", "Stacked bar charts"]
-        },
-        "Nominal (Binary)": {
-            "Primary Test/Metric": ["Chi-Square Test of Independence (Contingency)", "Point-Biserial"],
-            "Other Techniques": ["Logistic regression coefficients"],
-            "Visualization": ["Bar charts"]
+            "temporal": ["Line plots", "Heatmaps"],
+            "ordinal": ["Bar plots", "Line plots"],
+            "numerical_discrete": ["Boxplots", "Histograms"],
+            "numerical_continuous_bounded": ["Density plots", "Boxplots"],
+            "numerical_continuous_unbounded": ["Scatterplots", "Histograms"],
+            "nominal_multi_category": ["Bar charts", "Stacked bar charts"],
+            "nominal_binary": ["Bar charts"]
         }
-        }
-        return pd.DataFrame(info_summary).T[['Visualization']]
+        print(pd.Series(info_summary))
+    
+    def nominal_binary(self, variables):
+
+        percent_fraud_total = self.df.fraud_bool.sum() / len(self.df) * 100
+        for i in variables:
+            
+            plt.figure(figsize=(8, 6))
+            sns.countplot(data=self.df, x=self.target, hue=i, palette="viridis")
+            plt.title(f"{self.target} vs {i}")
+            plt.xlabel(self.target)
+            plt.ylabel("Count")
+            plt.legend(title=i, loc='upper right')
+            plt.tight_layout()
+            plt.show()
+
+            percent_fraud_when_1 = self.df[self.df[i] == 1].fraud_bool.sum() / len(self.df[self.df[i] == 1].fraud_bool) * 100
+            percent_fraud_when_0 = self.df[self.df[i] == 0].fraud_bool.sum() / len(self.df[self.df[i] == 0].fraud_bool) * 100
+
+            plt.figure(figsize=(8, 6))
+            plt.title(f'Percentage of fraud attempts by {i}')
+            plt.bar([f'{i} == 1', f'{i} == 0'], [percent_fraud_when_1, percent_fraud_when_0], color='red')
+            plt.axhline(y=percent_fraud_total, color='black', linestyle='--')
+            plt.text(1, percent_fraud_total, 'overall fraud average', color='black', ha='center', va='bottom')
+            plt.ylabel("Fraud %")
+            plt.tight_layout()
+            plt.show()
+
+    
+    def nominal_multi_category(self, variables):
+
+        percent_fraud_total = self.df.fraud_bool.sum() / len(self.df) * 100
+        for i in variables:
+            plt.figure(figsize=(10, 6))
+            sns.countplot(data=self.df, hue=self.target, x=i)
+            plt.title(f"Bar Chart of {i} by {self.target}")
+            plt.legend(title=self.target, loc="upper right")
+            plt.tight_layout()
+            plt.show()
+
+            plt.figure(figsize=(10, 6))
+            crosstab = pd.crosstab(self.df[i], self.df[self.target], normalize="index")
+            crosstab.plot(kind="bar", stacked=True, colormap="viridis", figsize=(10, 6))
+            plt.title(f"Stacked Bar Chart of {i}")
+            plt.legend(title=self.target)
+            plt.tight_layout()
+            plt.show()
+
+            plt.figure(figsize=(10, 6))
+            plt.title(f'Percentage of fraud attempts by category of {i}')
+            category = []
+            percentage = []
+            for j in set(self.df[i].values):
+                category.append(j)
+                percentage.append(self.df[self.df[i] == j].fraud_bool.sum() / len(self.df[self.df[i] == j]) * 100)
+            plt.bar(category, percentage, color='red')
+            plt.axhline(y=percent_fraud_total, color='black', linestyle='--')
+            plt.text(1, percent_fraud_total, 'overall fraud average', color='black', ha='center', va='bottom')
+            plt.ylabel("Fraud %")
+            plt.tight_layout()
+            plt.show()
+
+    def numerical_discrete(self, variables):
+        for i in variables:
+
+            # BOX PLOTS
+            plt.figure(figsize=(10, 6))
+            sns.boxplot(data=self.df, x=self.target, y=i)
+            plt.title(f"Boxplot of {i} by {self.target}")
+            plt.show()
+
+            plt.figure(figsize=(10, 6))
+            sns.boxplot(data=self.df, x=self.target, y=i, showfliers=False)
+            plt.title(f"Boxplot of {i} by {self.target} (Outliers Ignored)")
+            plt.show()
+
+            # HISTOGRAM of percentage of 1s for each bin
+
+            # Remove outliers similarly to boxplot above 
+            Q1 = self.df['bank_branch_count_8w'].quantile(0.25)
+            Q3 = self.df['bank_branch_count_8w'].quantile(0.75)
+            IQR = Q3 - Q1
+            min_ = Q1 - 1.5 * IQR
+            max_ = Q3 + 1.5 * IQR
+            df_no_outliers = self.df[(self.df['bank_branch_count_8w'] <= max_) & (self.df['bank_branch_count_8w'] >= min_)]
+            data = df_no_outliers[i]  # feature of interest
+            target = df_no_outliers[self.target]  # target variable
+
+            # Bins for histogram
+            bins = 10
+            min_val = data.min()
+            max_val = data.max()
+            bin_edges = np.linspace(min_val, max_val, bins + 1)
+
+            # Calculate the histogram values (counts)
+            hist, bin_edges = np.histogram(data, bins=bin_edges)
+
+            # Calculate percentage of 1s for each bin
+            percent_1s = []
+            for j in range(len(bin_edges) - 1):
+                bin_start = bin_edges[j]
+                bin_end = bin_edges[j + 1]
+                
+                # Get the data points that fall within the current bin range
+                bin_mask = (data >= bin_start) & (data < bin_end)
+                
+                # Calculate the percentage of 1s in the target for this bin
+                target_in_bin = target[bin_mask]
+                percentage_1s = (target_in_bin.sum() / len(target_in_bin)) * 100 if len(target_in_bin) > 0 else 0
+                percent_1s.append(percentage_1s)
+
+            # Create the figure and axis for a single histogram
+            fig, ax_left = plt.subplots(figsize=(10, 6))
+
+            # Plot the percentage of 1s as bars
+            ax_left.bar(bin_edges[:-1] + (bin_edges[1] - bin_edges[0]) / 2, percent_1s, 
+                        width=(bin_edges[1] - bin_edges[0]) * 0.8, color='red', alpha=0.6)
+
+            # Set labels and title
+            ax_left.set_xlabel(i)
+            ax_left.set_ylabel("Percentage of positive fraud counts")
+            ax_left.set_title(f"Percentage of positive fraud counts by {i} in buckets of {bins}")
+
+            # Add bin range labels on the x-axis (lower and rotated at 45 degrees)
+            for j in range(len(bin_edges) - 1):
+                bin_range = f"[{bin_edges[j]:.2f}, {bin_edges[j + 1]:.2f}]"
+                ax_left.text(bin_edges[j] + (bin_edges[1] - bin_edges[0]) / 2, 
+                            -max(percent_1s) * 0.1, bin_range, ha='center', va='top', rotation=45)
+
+            plt.show()
+
+
+
+
+
+    def numerical_continuous_bounded(self, variables):
+        for i in variables:
+            plt.figure(figsize=(10, 6))
+            sns.kdeplot(data=self.df, x=i, hue=self.target, fill=True, common_norm=False, alpha=0.5)
+            plt.title(f"Density Plot of {i}")
+            plt.legend(title=self.target)
+            plt.show()
+
+            plt.figure(figsize=(10, 6))
+            sns.boxplot(data=self.df, x=self.target, y=i)
+            plt.title(f"Boxplot of {i} by {self.target}")
+            plt.show()
+
+    def numerical_continuous_unbounded(self, variables):
+        for i in variables:
+            plt.figure(figsize=(10, 6))
+            sns.scatterplot(data=self.df, x=self.target, y=i, hue=self.target)
+            plt.title(f"Scatterplot of {i} by {self.target}")
+            plt.legend(title=self.target)
+            plt.show()
+
+            plt.figure(figsize=(10, 6))
+            sns.histplot(data=self.df, x=i, hue=self.target, multiple="dodge", bins=20, kde=False)
+            plt.title(f"Histogram of {i}")
+            plt.legend(title=self.target)
+            plt.show()
+
+    def ordinal(self, variables):
+        for i in variables:
+            plt.figure(figsize=(10, 6))
+            sns.barplot(data=self.df, x=self.target, y=self.df[i].value_counts().reindex(self.df[i].unique()).values, hue=i)
+            plt.title(f"Bar Plot of {i} with {self.target}")
+            plt.legend(title=i, loc="upper right")
+            plt.show()
+
+            plt.figure(figsize=(10, 6))
+            sns.lineplot(data=self.df, x=self.target, y=i, marker="o")
+            plt.title(f"Line Plot of {i} with {self.target}")
+            plt.show()
+
+    def temporal(self, variables):
+        for i in variables:
+            plt.figure(figsize=(10, 6))
+            sns.lineplot(data=self.df, x=i, y=self.target, marker="o")
+            plt.title(f"Line Plot of {i} vs {self.target}")
+            plt.show()
+
+            plt.figure(figsize=(10, 6))
+            sns.heatmap(pd.crosstab(self.df[i], self.df[self.target]), annot=True, fmt="d", cmap="coolwarm")
+            plt.title(f"Heatmap of {i} vs {self.target}")
+            plt.show()
