@@ -243,7 +243,25 @@ class FeatureSignificance:
         }).sort_values('Spearman Correlation', ascending=False).set_index('Feature')
 
         return temporal_significance
+    
 
+class OddsRatios:
+    def __init__(self, df, target):
+        self.df = df
+        self.target = target
+
+    def binary_features(self, variables):
+        binary_odds_ratios = {}
+        for i in variables:
+            positive_df = self.df[self.df[i] == 1]
+            negative_df = self.df[self.df[i] == 0]
+            positive_and_target = positive_df[self.target].sum()
+            positive_and_not_target = len(positive_df) - positive_and_target
+            negative_and_target = negative_df[self.target].sum()
+            negative_and_not_target = len(negative_df) - negative_and_target
+            odds_ratio = (positive_and_target / positive_and_not_target) / (negative_and_target / negative_and_not_target)
+            binary_odds_ratios[i] = odds_ratio
+        return pd.DataFrame({'Odds Ratio': list(binary_odds_ratios.values())}, index=binary_odds_ratios.keys()).sort_values('Odds Ratio')
 
     
 
@@ -488,5 +506,3 @@ class FeatureVisualisation:
             plt.ylabel('Fraud Percentage (%)')
             plt.show()
 
-    def temporal(self, variables):
-        print('not finished')
