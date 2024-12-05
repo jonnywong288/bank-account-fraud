@@ -263,7 +263,28 @@ class OddsRatios:
             binary_odds_ratios[i] = odds_ratio
         return pd.DataFrame({'Odds Ratio': list(binary_odds_ratios.values())}, index=binary_odds_ratios.keys()).sort_values('Odds Ratio')
 
-    
+    def multi_category_features(self, variables):
+        multi_category_odds_ratios = {}
+        for i in variables:
+            variable_odds_ratios = {}
+            categories = set(self.df[i].values)
+            for c in categories:
+                positive_df = self.df[self.df[i] == c]
+                negative_df = self.df[self.df[i] != c]
+                positive_and_target = positive_df[self.target].sum()
+                positive_and_not_target = len(positive_df) - positive_and_target
+                negative_and_target = negative_df[self.target].sum()
+                negative_and_not_target = len(negative_df) - negative_and_target
+                odds_ratio = (positive_and_target / positive_and_not_target) / (negative_and_target / negative_and_not_target)
+                variable_odds_ratios[c] = odds_ratio
+            multi_category_odds_ratios[i] = variable_odds_ratios
+
+        flattened = []
+        for j,k in multi_category_odds_ratios.items():
+            for l,m in k.items():
+                flattened.append({'Variable':j, 'Category':l, 'Odds Ratio':m})
+        return pd.DataFrame(flattened).set_index('Variable').sort_values('Odds Ratio')
+
 
 class FeatureVisualisation:
     def __init__(self, df, target):
