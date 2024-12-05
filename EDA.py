@@ -464,31 +464,29 @@ class FeatureVisualisation:
 
             plt.show()
     
-
-
-
-
     def ordinal(self, variables):
         for i in variables:
+
+            values = sorted(set(self.df[i].values))
+            f_percentages = {}
+            totals = {}
+            for v in values:
+                f_percentages[v] = self.df[self.df[i] == v][self.target].sum() / len(self.df[self.df[i] == v]) * 100
+                totals[v] = len(self.df[self.df[i] == v])
+
             plt.figure(figsize=(10, 6))
-            sns.barplot(data=self.df, x=self.target, y=self.df[i].value_counts().reindex(self.df[i].unique()).values, hue=i)
-            plt.title(f"Bar Plot of {i} with {self.target}")
-            plt.legend(title=i, loc="upper right")
+            plt.bar([str(vr.round(3)) for vr in totals.keys()], totals.values())
+            plt.title(f"Size of buckets of {i}")
+            plt.xlabel('buckets')
+            plt.ylabel('Count')
             plt.show()
 
             plt.figure(figsize=(10, 6))
-            sns.lineplot(data=self.df, x=self.target, y=i, marker="o")
-            plt.title(f"Line Plot of {i} with {self.target}")
+            plt.bar([str(vr.round(3)) for vr in f_percentages.keys()], f_percentages.values(), color='red')
+            plt.title(f"Fraud percentage by bucket of {i}")
+            plt.xlabel('buckets')
+            plt.ylabel('Fraud Percentage (%)')
             plt.show()
 
     def temporal(self, variables):
-        for i in variables:
-            plt.figure(figsize=(10, 6))
-            sns.lineplot(data=self.df, x=i, y=self.target, marker="o")
-            plt.title(f"Line Plot of {i} vs {self.target}")
-            plt.show()
-
-            plt.figure(figsize=(10, 6))
-            sns.heatmap(pd.crosstab(self.df[i], self.df[self.target]), annot=True, fmt="d", cmap="coolwarm")
-            plt.title(f"Heatmap of {i} vs {self.target}")
-            plt.show()
+        print('not finished')
