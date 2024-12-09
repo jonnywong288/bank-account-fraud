@@ -15,14 +15,16 @@ nominal = ['payment_type',
  'has_other_cards',
  'foreign_request',
  'keep_alive_session',
- 'proposed_credit_limit' # added here because of aparent bucketing
+ 'proposed_credit_limit', # added here because of aparent bucketing
+ 'device_distinct_emails_8w'# added here because of aparent bucketing
 ]
 
 nominal_multi_category = ['payment_type',
  'employment_status',
  'housing_status',
  'device_os',
- 'proposed_credit_limit' # added here because of aparent bucketing
+ 'proposed_credit_limit', # added here because of aparent bucketing
+ 'device_distinct_emails_8w' # added here because of buckets
 ]
 
 nominal_binary = ['source_is_internet_not_teleapp',
@@ -45,7 +47,7 @@ numerical_discrete = ['prev_address_months_count',
  'credit_risk_score',
  'bank_months_count',
  'device_fraud_count',
- 'device_distinct_emails_8w',
+ #'device_distinct_emails_8w',
  'zip_count_4w'
 ]
 numerical_continuous_bounded = ['name_email_similarity']
@@ -73,7 +75,7 @@ numerical = ['name_email_similarity',
  'bank_months_count',
  'session_length_in_minutes',
  # 'device_fraud_count',  # removed because always 0
- 'device_distinct_emails_8w',
+ #'device_distinct_emails_8w',
 ]
 
 # create dic

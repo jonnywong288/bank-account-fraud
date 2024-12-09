@@ -12,7 +12,8 @@
         "has_other_cards",
         "foreign_request",
         "keep_alive_session",
-        "proposed_credit_limit"
+        "proposed_credit_limit",
+        "device_distinct_emails_8w"
     ],
     "ordinal": [
         "income",
@@ -32,8 +33,7 @@
         "date_of_birth_distinct_emails_4w",
         "credit_risk_score",
         "bank_months_count",
-        "session_length_in_minutes",
-        "device_distinct_emails_8w"
+        "session_length_in_minutes"
     ],
     "temporal": [
         "month"
@@ -46,7 +46,6 @@
         "credit_risk_score",
         "bank_months_count",
         "device_fraud_count",
-        "device_distinct_emails_8w",
         "zip_count_4w"
     ],
     "numerical_continuous_bounded": [
@@ -65,7 +64,8 @@
         "employment_status",
         "housing_status",
         "device_os",
-        "proposed_credit_limit"
+        "proposed_credit_limit",
+        "device_distinct_emails_8w"
     ],
     "nominal_binary": [
         "source_is_internet_not_teleapp",
