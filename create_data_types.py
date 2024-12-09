@@ -46,7 +46,7 @@ numerical_discrete = ['prev_address_months_count',
  'date_of_birth_distinct_emails_4w',
  'credit_risk_score',
  'bank_months_count',
- 'device_fraud_count',
+ # 'device_fraud_count', remove useless variable (all 0s)
  #'device_distinct_emails_8w',
  'zip_count_4w'
 ]

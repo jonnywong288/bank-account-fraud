@@ -45,7 +45,6 @@
         "date_of_birth_distinct_emails_4w",
         "credit_risk_score",
         "bank_months_count",
-        "device_fraud_count",
         "zip_count_4w"
     ],
     "numerical_continuous_bounded": [

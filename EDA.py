@@ -262,13 +262,22 @@ class OddsRatios:
             negative_and_not_target = len(negative_df) - negative_and_target
             odds_ratio = (positive_and_target / positive_and_not_target) / (negative_and_target / negative_and_not_target)
             binary_odds_ratios[i] = odds_ratio
+
+        plt.bar(binary_odds_ratios.keys(), binary_odds_ratios.values())
+        plt.title('Odds Ratios for Positive Fraud in Each Binary Category')
+        plt.xlabel('Binary Category')
+        plt.ylabel('Odds Ratio')
+        plt.xticks(rotation=90)
+        plt.axhline(y=1, color='black', linestyle='--')
+        plt.show()
+
         return pd.DataFrame({'Odds Ratio': list(binary_odds_ratios.values())}, index=binary_odds_ratios.keys()).sort_values('Odds Ratio')
 
     def multi_category_features(self, variables):
         multi_category_odds_ratios = {}
         for i in variables:
             variable_odds_ratios = {}
-            categories = set(self.df[i].values)
+            categories = sorted(list(set(self.df[i].values)))
             for c in categories:
                 positive_df = self.df[self.df[i] == c]
                 negative_df = self.df[self.df[i] != c]
@@ -277,52 +286,51 @@ class OddsRatios:
                 negative_and_target = negative_df[self.target].sum()
                 negative_and_not_target = len(negative_df) - negative_and_target
                 odds_ratio = (positive_and_target / positive_and_not_target) / (negative_and_target / negative_and_not_target)
-                variable_odds_ratios[c] = odds_ratio
+                variable_odds_ratios[str(c)] = odds_ratio
             multi_category_odds_ratios[i] = variable_odds_ratios
+
+        n_vars = len(variables)
+        cols = 3
+        rows = int(np.ceil(n_vars/cols))
+        fig, axes = plt.subplots(rows, cols, figsize=(cols * 5, rows * 4))  # Adjust figure size for readability
+        fig.suptitle("Odds Ratios for Categories of Multi-Category Variables", fontsize=16, y=1.02)  # Adjust y to prevent overlap
+        axes = axes.flatten()  
+
+        for idx, v in enumerate(multi_category_odds_ratios.keys()):
+            ax = axes[idx]
+            ax.bar(multi_category_odds_ratios[v].keys(), multi_category_odds_ratios[v].values())
+            ax.set_title(f'{v} odds ratios by category')
+            ax.set_xlabel('Category')
+            ax.set_ylabel('Odds Ratio')
+            ax.tick_params(axis='x', rotation=45) 
+            ax.axhline(y=1, color='black', linestyle='--')
+
+
+        
+        # Hide empty subplots
+        for ax in axes[n_vars:]:
+            ax.axis('off')
+        
+        plt.tight_layout()  
+        plt.show()
+
 
         flattened = []
         for j,k in multi_category_odds_ratios.items():
             for l,m in k.items():
                 flattened.append({'Variable':j, 'Category':l, 'Odds Ratio':m})
+
         return pd.DataFrame(flattened).set_index('Variable').sort_values(['Variable', 'Odds Ratio'])
     
     def numerical_features(self, variables):
         all_odds_ratios = []
-        for v in variables:
-            quantile_odds = {}
-            if v in self.missing_values:
-                df_no_nulls = self.df[self.df[v] != -1]
-                quantiles = [df_no_nulls[v].quantile(np.round(i, 1)) for i in np.linspace(0,1,11)]
-            else:
-                quantiles = [self.df[v].quantile(np.round(i, 1)) for i in np.linspace(0,1,11)]
-            for i in range(len(quantiles))[:-1]:
-                quantile = self.df[(self.df[v] >= quantiles[i]) & (self.df[v] < quantiles[i+1])]
-                not_quantile = self.df[(self.df[v] < quantiles[i]) | (self.df[v] >= quantiles[i+1])]
-
-                quantile_and_target = quantile[self.target].sum()
-                quantile_and_not_target = len(quantile) - quantile_and_target
-                not_quantile_and_target = not_quantile[self.target].sum()
-                not_quantile_and_not_target = len(not_quantile) - not_quantile_and_target
-
-                odds_ratio = (quantile_and_target / quantile_and_not_target) / (not_quantile_and_target / not_quantile_and_not_target)
-                quantile_odds[f'{i+1}/10'] = odds_ratio
-            quantile_odds_df = pd.DataFrame({'Quantile': quantile_odds.keys(),f'Odds Ratio: {v}':quantile_odds.values()}).set_index('Quantile')
-            plt.plot(quantile_odds_df.index, quantile_odds_df[f'Odds Ratio: {v}'])
-            plt.title(f'{v} odds ratios by quantile')
-            plt.show()
-            all_odds_ratios.append(quantile_odds_df)
-        return pd.concat(all_odds_ratios, axis=1)
-    
-    def numerical_features_grid(self, variables):
-        all_odds_ratios = []
         n_vars = len(variables)
         
-        # Fixed number of columns (3) and calculate rows
         cols = 3
         rows = int(np.ceil(n_vars / cols))
-        
         fig, axes = plt.subplots(rows, cols, figsize=(cols * 5, rows * 4))  # Adjust figure size for readability
-        axes = axes.flatten()  # Flatten to simplify indexing
+        fig.suptitle("Odds Ratios for Quantiles of Numerical Variables", fontsize=16, y=1.02)  # Adjust y to prevent overlap
+        axes = axes.flatten()  
         
         for idx, v in enumerate(variables):
             quantile_odds = {}
@@ -349,20 +357,22 @@ class OddsRatios:
                 f'Odds Ratio: {v}': quantile_odds.values()
             }).set_index('Quantile')
             
-            # Plot in the corresponding subplot
+            # Plot subplot
             ax = axes[idx]
             ax.plot(quantile_odds_df.index, quantile_odds_df[f'Odds Ratio: {v}'])
             ax.set_title(f'{v} odds ratios by quantile')
             ax.set_xlabel('Quantile')
             ax.set_ylabel('Odds Ratio')
+            ax.axhline(y=1, color='black', linestyle='--')
+
             
             all_odds_ratios.append(quantile_odds_df)
         
-        # Hide any unused subplots
+        # Hide empty subplots
         for ax in axes[n_vars:]:
             ax.axis('off')
         
-        plt.tight_layout()  # Adjust layout to prevent overlap
+        plt.tight_layout()  
         plt.show()
         
         return pd.concat(all_odds_ratios, axis=1)
@@ -393,223 +403,165 @@ class FeatureVisualisation:
 
         percent_fraud_total = self.df.fraud_bool.sum() / len(self.df) * 100
         for i in variables:
+
+            # Create subplots with 1 row and 2 columns
+            fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+            fig.suptitle(f"{i}", fontsize=16, y=1.02)  # Adjust y to prevent overlap
+
             
-            plt.figure(figsize=(8, 6))
-            sns.countplot(data=self.df, x=self.target, hue=i, palette="viridis")
-            plt.title(f"{self.target} vs {i}")
-            plt.xlabel(self.target)
-            plt.ylabel("Count")
-            plt.legend(title=i, loc='upper right')
-            plt.tight_layout()
-            plt.show()
+            sns.countplot(data=self.df, x=self.target, hue=i, palette="viridis", ax=axes[0])
+            axes[0].set_title(f"{self.target} vs {i}")
+            axes[0].set_xlabel(self.target)
+            axes[0].set_ylabel("Count")
+            axes[0].legend(title=i, loc='upper right')
+            
 
             percent_fraud_when_1 = self.df[self.df[i] == 1].fraud_bool.sum() / len(self.df[self.df[i] == 1].fraud_bool) * 100
             percent_fraud_when_0 = self.df[self.df[i] == 0].fraud_bool.sum() / len(self.df[self.df[i] == 0].fraud_bool) * 100
 
-            plt.figure(figsize=(8, 6))
-            plt.title(f'Percentage of fraud attempts by {i}')
-            plt.bar([f'{i} == 1', f'{i} == 0'], [percent_fraud_when_1, percent_fraud_when_0], color='red')
-            plt.axhline(y=percent_fraud_total, color='black', linestyle='--')
-            plt.text(1, percent_fraud_total, 'overall fraud average', color='black', ha='center', va='bottom')
-            plt.ylabel("Fraud %")
+            axes[1].set_title(f'Percentage of fraud attempts by {i}')
+            axes[1].bar([f'{i} == 1', f'{i} == 0'], [percent_fraud_when_1, percent_fraud_when_0], color='red')
+            axes[1].axhline(y=percent_fraud_total, color='black', linestyle='--')
+            axes[1].text(1, percent_fraud_total, 'overall fraud average', color='black', ha='center', va='bottom')
+            axes[1].set_ylabel("Fraud %")
+            
+            
             plt.tight_layout()
             plt.show()
  
     def nominal_multi_category(self, variables):
-
         percent_fraud_total = self.df.fraud_bool.sum() / len(self.df) * 100
         for i in variables:
-            plt.figure(figsize=(10, 6))
-            sns.countplot(data=self.df, hue=self.target, x=i)
-            plt.title(f"Bar Chart of {i} by {self.target}")
-            plt.legend(title=self.target, loc="upper right")
-            plt.tight_layout()
-            plt.show()
-
-            plt.figure(figsize=(10, 6))
+            # Create subplots with 1 row and 3 columns
+            fig, axes = plt.subplots(1, 3, figsize=(24, 6))
+            fig.suptitle(f"{i}", fontsize=16, y=1.02)  # Adjust y to prevent overlap
+            
+            # Create a temporary column with string conversion
+            temp_df = self.df.assign(temp_column=self.df[i].astype(str))
+            
+            # Check if the variable is numerical and sort only if it is
+            if pd.api.types.is_numeric_dtype(self.df[i]):
+                sorted_order = sorted(temp_df['temp_column'].unique(), key=lambda x: float(x))
+            else:
+                sorted_order = sorted(temp_df['temp_column'].unique())
+            
+            # Plot the first chart (countplot)
+            sns.countplot(data=temp_df, hue=self.target, x="temp_column", order=sorted_order, ax=axes[0])
+            axes[0].set_title(f"Bar Chart of {i} by {self.target}")
+            axes[0].legend(title=self.target, loc="upper right")
+            
+            # Plot the second chart (stacked bar chart of crosstab)
             crosstab = pd.crosstab(self.df[i], self.df[self.target], normalize="index")
-            crosstab.plot(kind="bar", stacked=True, colormap="viridis", figsize=(10, 6))
-            plt.title(f"Stacked Bar Chart of {i}")
-            plt.legend(title=self.target)
-            plt.tight_layout()
-            plt.show()
-
-            plt.figure(figsize=(10, 6))
-            plt.title(f'Percentage of fraud attempts by category of {i}')
+            crosstab.plot(kind="bar", stacked=True, colormap="viridis", ax=axes[1])
+            axes[1].set_title(f"Stacked Bar Chart of {i}")
+            axes[1].legend(title=self.target)
+            
+            # Plot the third chart (percentage of fraud by category)
+            axes[2].set_title(f'Percentage of fraud attempts by category of {i}')
             category = []
             percentage = []
-            for j in set(self.df[i].values):
-                category.append(j)
+            for j in sorted(list(set(self.df[i].values))):
+                category.append(str(j))
                 percentage.append(self.df[self.df[i] == j].fraud_bool.sum() / len(self.df[self.df[i] == j]) * 100)
-            plt.bar(category, percentage, color='red')
-            plt.axhline(y=percent_fraud_total, color='black', linestyle='--')
-            plt.text(1, percent_fraud_total, 'overall fraud average', color='black', ha='center', va='bottom')
-            plt.ylabel("Fraud %")
+            axes[2].bar(category, percentage, color='red')
+            axes[2].axhline(y=percent_fraud_total, color='black', linestyle='--')
+            axes[2].text(1, percent_fraud_total, 'overall fraud average', color='black', ha='center', va='bottom')
+            axes[2].set_ylabel("Fraud %")
+            
+            # Ensure the layout is tight and title doesn't overlap
             plt.tight_layout()
             plt.show()
 
-    def numerical_discrete(self, variables):
+
+    def numerical(self, variables):
         for i in variables:
+            # Create a row of 4 subplots
+            fig, axes = plt.subplots(1, 4, figsize=(32, 6))  # 4 columns, adjust size for clarity
+            fig.suptitle(f"{i}", fontsize=16, y=1.02)  # Adjust y to prevent overlap
 
-            # BOX PLOTS
-            plt.figure(figsize=(10, 6))
-            sns.boxplot(data=self.df, x=self.target, y=i)
-            plt.title(f"Boxplot of {i} by {self.target}")
-            plt.show()
-
-            plt.figure(figsize=(10, 6))
-            sns.boxplot(data=self.df, x=self.target, y=i, showfliers=False)
-            plt.title(f"Boxplot of {i} by {self.target} (Outliers Ignored)")
-            plt.show()
-
-            # HISTOGRAM of percentage of 1s for each bin
-
-            # Remove outliers similarly to boxplot above 
+            # Density Plot
+            sns.kdeplot(data=self.df, x=i, hue=self.target, fill=True, common_norm=False, alpha=0.5, ax=axes[0])
+            axes[0].set_title(f"Density Plot of {i}")
+            
+            # Boxplot
+            sns.boxplot(data=self.df, x=self.target, y=i, ax=axes[1])
+            axes[1].set_title(f"Boxplot of {i} by {self.target}")
+            
+            # Boxplot without outliers
+            sns.boxplot(data=self.df, x=self.target, y=i, showfliers=False, ax=axes[2])
+            axes[2].set_title(f"Boxplot of {i} by {self.target} (Outliers Ignored)")
+            
+            # Histogram of percentage of 1s
+            # Remove outliers
             Q1 = self.df[i].quantile(0.25)
             Q3 = self.df[i].quantile(0.75)
             IQR = Q3 - Q1
             min_ = Q1 - 1.5 * IQR
             max_ = Q3 + 1.5 * IQR
             df_no_outliers = self.df[(self.df[i] <= max_) & (self.df[i] >= min_)]
-            data = df_no_outliers[i]  # feature of interest
-            target = df_no_outliers[self.target]  # target variable
-
-            # Bins for histogram
+            data = df_no_outliers[i]
+            target = df_no_outliers[self.target]
+            
             bins = 10
-            min_val = data.min()
-            max_val = data.max()
-            bin_edges = np.linspace(min_val, max_val, bins + 1)
-
-            # Calculate the histogram values (counts)
-            hist, bin_edges = np.histogram(data, bins=bin_edges)
-
-            # Calculate percentage of 1s for each bin
+            bin_edges = np.linspace(data.min(), data.max(), bins + 1)
             percent_1s = []
+            
             for j in range(len(bin_edges) - 1):
-                bin_start = bin_edges[j]
-                bin_end = bin_edges[j + 1]
-                
-                # Get the data points that fall within the current bin range
-                bin_mask = (data >= bin_start) & (data < bin_end)
-                
-                # Calculate the percentage of 1s in the target for this bin
+                bin_mask = (data >= bin_edges[j]) & (data < bin_edges[j + 1])
                 target_in_bin = target[bin_mask]
                 percentage_1s = (target_in_bin.sum() / len(target_in_bin)) * 100 if len(target_in_bin) > 0 else 0
                 percent_1s.append(percentage_1s)
-
-            # Create the figure and axis for a single histogram
-            fig, ax_left = plt.subplots(figsize=(10, 6))
-
-            # Plot the percentage of 1s as bars
-            ax_left.bar(bin_edges[:-1] + (bin_edges[1] - bin_edges[0]) / 2, percent_1s, 
+            
+            axes[3].bar(bin_edges[:-1] + (bin_edges[1] - bin_edges[0]) / 2, percent_1s,
                         width=(bin_edges[1] - bin_edges[0]) * 0.8, color='red', alpha=0.6)
+            axes[3].set_title(f"Percentage of Fraud by {i}")
+            axes[3].set_xlabel(f"{i} Bins")
+            axes[3].set_ylabel("Fraud Percentage (%)")
 
-            # Set labels and title
-            ax_left.set_xlabel(i)
-            ax_left.set_ylabel("Percentage of positive fraud counts")
-            ax_left.set_title(f"Percentage of positive fraud counts by {i} in buckets of {bins}")
-
-            # Add bin range labels on the x-axis (lower and rotated at 45 degrees)
+            # Add bin range labels rotated at 45 degrees
             for j in range(len(bin_edges) - 1):
                 bin_range = f"[{bin_edges[j]:.2f}, {bin_edges[j + 1]:.2f}]"
-                ax_left.text(bin_edges[j] + (bin_edges[1] - bin_edges[0]) / 2, 
-                            -max(percent_1s) * 0.1, bin_range, ha='center', va='top', rotation=45)
+                axes[3].text(
+                    bin_edges[j] + (bin_edges[1] - bin_edges[0]) / 2,  # Center of the bar
+                    -max(percent_1s) * 0.15,                           # Position below the x-axis
+                    bin_range,                                         # Label text
+                    ha='center', va='top', rotation=45                 # Center-align and rotate
+                )
 
+            
+            # Adjust layout for better visualization
+            plt.tight_layout()
             plt.show()
 
-    def numerical_continuous(self, variables):
-        for i in variables:
-            plt.figure(figsize=(10, 6))
-            sns.kdeplot(data=self.df, x=i, hue=self.target, fill=True, common_norm=False, alpha=0.5)
-            plt.title(f"Density Plot of {i}")
-            plt.show()
 
-            plt.figure(figsize=(10, 6))
-            sns.boxplot(data=self.df, x=self.target, y=i)
-            plt.title(f"Boxplot of {i} by {self.target}")
-            plt.show()
-
-            plt.figure(figsize=(10, 6))
-            sns.boxplot(data=self.df, x=self.target, y=i, showfliers=False)
-            plt.title(f"Boxplot of {i} by {self.target} (Outliers Ignored)")
-            plt.show()
-
-            # HISTOGRAM of percentage of 1s for each bin
-
-            # Remove outliers similarly to boxplot above 
-            Q1 = self.df[i].quantile(0.25)
-            Q3 = self.df[i].quantile(0.75)
-            IQR = Q3 - Q1
-            min_ = Q1 - 1.5 * IQR
-            max_ = Q3 + 1.5 * IQR
-            df_no_outliers = self.df[(self.df[i] <= max_) & (self.df[i] >= min_)]
-            data = df_no_outliers[i]  # feature of interest
-            target = df_no_outliers[self.target]  # target variable
-
-            # Bins for histogram
-            bins = 10
-            min_val = data.min()
-            max_val = data.max()
-            bin_edges = np.linspace(min_val, max_val, bins + 1)
-
-            # Calculate the histogram values (counts)
-            hist, bin_edges = np.histogram(data, bins=bin_edges)
-
-            # Calculate percentage of 1s for each bin
-            percent_1s = []
-            for j in range(len(bin_edges) - 1):
-                bin_start = bin_edges[j]
-                bin_end = bin_edges[j + 1]
-                
-                # Get the data points that fall within the current bin range
-                bin_mask = (data >= bin_start) & (data < bin_end)
-                
-                # Calculate the percentage of 1s in the target for this bin
-                target_in_bin = target[bin_mask]
-                percentage_1s = (target_in_bin.sum() / len(target_in_bin)) * 100 if len(target_in_bin) > 0 else 0
-                percent_1s.append(percentage_1s)
-
-            # Create the figure and axis for a single histogram
-            fig, ax_left = plt.subplots(figsize=(10, 6))
-
-            # Plot the percentage of 1s as bars
-            ax_left.bar(bin_edges[:-1] + (bin_edges[1] - bin_edges[0]) / 2, percent_1s, 
-                        width=(bin_edges[1] - bin_edges[0]) * 0.8, color='red', alpha=0.6)
-
-            # Set labels and title
-            ax_left.set_xlabel(i)
-            ax_left.set_ylabel("Percentage of positive fraud counts")
-            ax_left.set_title(f"Percentage of positive fraud counts by {i} in buckets of {bins}")
-
-            # Add bin range labels on the x-axis (lower and rotated at 45 degrees)
-            for j in range(len(bin_edges) - 1):
-                bin_range = f"[{bin_edges[j]:.2f}, {bin_edges[j + 1]:.2f}]"
-                ax_left.text(bin_edges[j] + (bin_edges[1] - bin_edges[0]) / 2, 
-                            -max(percent_1s) * 0.1, bin_range, ha='center', va='top', rotation=45)
-
-            plt.show()
-    
     def ordinal(self, variables):
         for i in variables:
-
             values = sorted(set(self.df[i].values))
             f_percentages = {}
             totals = {}
             for v in values:
                 f_percentages[v] = self.df[self.df[i] == v][self.target].sum() / len(self.df[self.df[i] == v]) * 100
                 totals[v] = len(self.df[self.df[i] == v])
+            
+            # Create subplots with 1 row and 2 columns
+            fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+            fig.suptitle(f"{i}", fontsize=16, y=1.02)  # Adjust y to prevent overlap
 
-            plt.figure(figsize=(10, 6))
-            plt.bar([str(vr.round(3)) for vr in totals.keys()], totals.values())
-            plt.title(f"Size of buckets of {i}")
-            plt.xlabel('buckets')
-            plt.ylabel('Count')
+            
+            # Plot the size of buckets on the first subplot
+            axes[0].bar([str(vr.round(3)) for vr in totals.keys()], totals.values())
+            axes[0].set_title(f"Size of buckets of {i}")
+            axes[0].set_xlabel('Buckets')
+            axes[0].set_ylabel('Count')
+            
+            # Plot the fraud percentages on the second subplot
+            axes[1].bar([str(vr.round(3)) for vr in f_percentages.keys()], f_percentages.values(), color='red')
+            axes[1].set_title(f"Fraud percentage by bucket of {i}")
+            axes[1].set_xlabel('Buckets')
+            axes[1].set_ylabel('Fraud Percentage (%)')
+            
+            # Adjust layout and show the plots
+            plt.tight_layout()
             plt.show()
 
-            plt.figure(figsize=(10, 6))
-            plt.bar([str(vr.round(3)) for vr in f_percentages.keys()], f_percentages.values(), color='red')
-            plt.title(f"Fraud percentage by bucket of {i}")
-            plt.xlabel('buckets')
-            plt.ylabel('Fraud Percentage (%)')
-            plt.show()
 
