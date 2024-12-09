@@ -246,9 +246,10 @@ class FeatureSignificance:
     
 
 class OddsRatios:
-    def __init__(self, df, target):
+    def __init__(self, df, target, missing_values):
         self.df = df
         self.target = target
+        self.missing_values = missing_values
 
     def binary_features(self, variables):
         binary_odds_ratios = {}
@@ -283,7 +284,34 @@ class OddsRatios:
         for j,k in multi_category_odds_ratios.items():
             for l,m in k.items():
                 flattened.append({'Variable':j, 'Category':l, 'Odds Ratio':m})
-        return pd.DataFrame(flattened).set_index('Variable').sort_values('Odds Ratio')
+        return pd.DataFrame(flattened).set_index('Variable').sort_values(['Variable', 'Odds Ratio'])
+    
+    def numerical_features(self, variables):
+        for v in variables:
+            quantile_odds = {}
+            if v in self.missing_values:
+                df_no_nulls = self.df[self.df[v] != -1]
+                quantiles = [df_no_nulls[v].quantile(np.round(i, 1)) for i in np.linspace(0,1,11)]
+            else:
+                quantiles = [self.df[v].quantile(np.round(i, 1)) for i in np.linspace(0,1,11)]
+            for i in range(len(quantiles))[:-1]:
+                quantile = self.df[(self.df[v] >= quantiles[i]) & (self.df[v] < quantiles[i+1])]
+                not_quantile = self.df[(self.df[v] < quantiles[i]) | (self.df[v] >= quantiles[i+1])]
+
+                quantile_and_target = quantile[self.target].sum()
+                quantile_and_not_target = len(quantile) - quantile_and_target
+                not_quantile_and_target = not_quantile[self.target].sum()
+                not_quantile_and_not_target = len(not_quantile) - not_quantile_and_target
+
+                odds_ratio = (quantile_and_target / quantile_and_not_target) / (not_quantile_and_target / not_quantile_and_not_target)
+                quantile_odds[f'{i+1}/10'] = odds_ratio
+            quantile_odds_df = pd.DataFrame({'Quantile': quantile_odds.keys(),'Odds Ratio':quantile_odds.values()}).set_index('Quantile')
+            plt.plot(quantile_odds_df.index, quantile_odds_df['Odds Ratio'])
+            plt.title(f'{v} odds ratios by quantile')
+            plt.show()
+            print(quantile_odds_df)
+
+
 
 
 class FeatureVisualisation:

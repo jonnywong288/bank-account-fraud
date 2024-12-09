@@ -14,12 +14,16 @@ nominal = ['payment_type',
  'phone_mobile_valid',
  'has_other_cards',
  'foreign_request',
- 'keep_alive_session']
+ 'keep_alive_session',
+ 'proposed_credit_limit' # added here because of aparent bucketing
+]
 
 nominal_multi_category = ['payment_type',
  'employment_status',
  'housing_status',
- 'device_os']
+ 'device_os',
+ 'proposed_credit_limit' # added here because of aparent bucketing
+]
 
 nominal_binary = ['source_is_internet_not_teleapp',
  'email_is_free',
@@ -40,7 +44,6 @@ numerical_discrete = ['prev_address_months_count',
  'date_of_birth_distinct_emails_4w',
  'credit_risk_score',
  'bank_months_count',
- 'proposed_credit_limit',
  'device_fraud_count',
  'device_distinct_emails_8w',
  'zip_count_4w'
@@ -68,9 +71,8 @@ numerical = ['name_email_similarity',
  'date_of_birth_distinct_emails_4w',
  'credit_risk_score',
  'bank_months_count',
- 'proposed_credit_limit',
  'session_length_in_minutes',
- 'device_fraud_count',
+ # 'device_fraud_count',  # removed because always 0
  'device_distinct_emails_8w',
 ]
 
