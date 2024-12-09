@@ -287,6 +287,7 @@ class OddsRatios:
         return pd.DataFrame(flattened).set_index('Variable').sort_values(['Variable', 'Odds Ratio'])
     
     def numerical_features(self, variables):
+        all_odds_ratios = []
         for v in variables:
             quantile_odds = {}
             if v in self.missing_values:
@@ -305,11 +306,68 @@ class OddsRatios:
 
                 odds_ratio = (quantile_and_target / quantile_and_not_target) / (not_quantile_and_target / not_quantile_and_not_target)
                 quantile_odds[f'{i+1}/10'] = odds_ratio
-            quantile_odds_df = pd.DataFrame({'Quantile': quantile_odds.keys(),'Odds Ratio':quantile_odds.values()}).set_index('Quantile')
-            plt.plot(quantile_odds_df.index, quantile_odds_df['Odds Ratio'])
+            quantile_odds_df = pd.DataFrame({'Quantile': quantile_odds.keys(),f'Odds Ratio: {v}':quantile_odds.values()}).set_index('Quantile')
+            plt.plot(quantile_odds_df.index, quantile_odds_df[f'Odds Ratio: {v}'])
             plt.title(f'{v} odds ratios by quantile')
             plt.show()
-            print(quantile_odds_df)
+            all_odds_ratios.append(quantile_odds_df)
+        return pd.concat(all_odds_ratios, axis=1)
+    
+    def numerical_features_grid(self, variables):
+        all_odds_ratios = []
+        n_vars = len(variables)
+        
+        # Fixed number of columns (3) and calculate rows
+        cols = 3
+        rows = int(np.ceil(n_vars / cols))
+        
+        fig, axes = plt.subplots(rows, cols, figsize=(cols * 5, rows * 4))  # Adjust figure size for readability
+        axes = axes.flatten()  # Flatten to simplify indexing
+        
+        for idx, v in enumerate(variables):
+            quantile_odds = {}
+            if v in self.missing_values:
+                df_no_nulls = self.df[self.df[v] != -1]
+                quantiles = [df_no_nulls[v].quantile(np.round(i, 1)) for i in np.linspace(0, 1, 11)]
+            else:
+                quantiles = [self.df[v].quantile(np.round(i, 1)) for i in np.linspace(0, 1, 11)]
+            
+            for i in range(len(quantiles))[:-1]:
+                quantile = self.df[(self.df[v] >= quantiles[i]) & (self.df[v] < quantiles[i+1])]
+                not_quantile = self.df[(self.df[v] < quantiles[i]) | (self.df[v] >= quantiles[i+1])]
+
+                quantile_and_target = quantile[self.target].sum()
+                quantile_and_not_target = len(quantile) - quantile_and_target
+                not_quantile_and_target = not_quantile[self.target].sum()
+                not_quantile_and_not_target = len(not_quantile) - not_quantile_and_target
+
+                odds_ratio = (quantile_and_target / quantile_and_not_target) / (not_quantile_and_target / not_quantile_and_not_target)
+                quantile_odds[f'{i+1}/10'] = odds_ratio
+            
+            quantile_odds_df = pd.DataFrame({
+                'Quantile': quantile_odds.keys(),
+                f'Odds Ratio: {v}': quantile_odds.values()
+            }).set_index('Quantile')
+            
+            # Plot in the corresponding subplot
+            ax = axes[idx]
+            ax.plot(quantile_odds_df.index, quantile_odds_df[f'Odds Ratio: {v}'])
+            ax.set_title(f'{v} odds ratios by quantile')
+            ax.set_xlabel('Quantile')
+            ax.set_ylabel('Odds Ratio')
+            
+            all_odds_ratios.append(quantile_odds_df)
+        
+        # Hide any unused subplots
+        for ax in axes[n_vars:]:
+            ax.axis('off')
+        
+        plt.tight_layout()  # Adjust layout to prevent overlap
+        plt.show()
+        
+        return pd.concat(all_odds_ratios, axis=1)
+
+
 
 
 
