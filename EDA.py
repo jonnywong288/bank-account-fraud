@@ -37,7 +37,7 @@ class FeatureSignificance:
                             '-1 (%)': minus_one_percentage,
                             'unique values': unique_values}).set_index('Feature')
 
-    def calculations(self):
+    def info(self):
         info_summary = {
             "temporal": ["Spearman Correlation", "Chi-Square Test (Goodness of Fit)"],  
             "ordinal": ["Spearman Correlation", "Logistic Regression Coefficient"],
@@ -377,25 +377,18 @@ class OddsRatios:
         
         return pd.concat(all_odds_ratios, axis=1)
 
-
-
-
-
-
 class FeatureVisualisation:
     def __init__(self, df, target):
         self.df = df
         self.target = target
 
-    def visualisations(self):
+    def info(self):
         info_summary = {
-            "temporal": ["Line plots", "Heatmaps"],
-            "ordinal": ["Bar plots", "Line plots"],
-            "numerical_discrete": ["Boxplots", "Histograms"],
-            "numerical_continuous_bounded": ["Density plots", "Boxplots"],
-            "numerical_continuous_unbounded": ["Scatterplots", "Histograms"],
+            "ordinal": ["Bar charts"],
+            "numerical": ["Density plots", "Boxplots", "Bar charts"],
             "nominal_multi_category": ["Bar charts", "Stacked bar charts"],
-            "nominal_binary": ["Bar charts"]
+            "nominal_binary": ["Bar charts"],
+            "missing value analysis": ["Bar charts"]
         }
         print(pd.Series(info_summary))
     
@@ -563,5 +556,55 @@ class FeatureVisualisation:
             # Adjust layout and show the plots
             plt.tight_layout()
             plt.show()
+
+    def missing_values(self, variables, missing_value_type):
+        percent_fraud_total = self.df.fraud_bool.sum() / len(self.df) * 100
+        if pd.isna(missing_value_type):
+            for i in variables:
+                fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+                fig.suptitle(f"{i}", fontsize=16, y=1.02)  # Adjust y to prevent overlap
+
+                value_counts = {
+                    'Missing Values': len(self.df[self.df[i].isna()]),
+                    'Provided Values': len(self.df[self.df[i].notna()])
+                }
+                axes[0].bar(value_counts.keys(), value_counts.values())
+                axes[0].set_title(f'Volume of missing values of {i} in data set')
+
+                target_value_counts = {
+                    'Missing Values': self.df[self.df[i].isna()][self.target].sum(),
+                    'Provided Values': self.df[self.df[i].notna()][self.target].sum()
+                }
+                axes[1].bar(target_value_counts.keys(), target_value_counts.values())
+                axes[1].set_title('Comparison of fraud percentage between missing and provided values')
+
+                # Adjust layout and show the plots
+                plt.tight_layout()
+                plt.show()
+        else:
+            for i in variables:
+                fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+                fig.suptitle(f"{i}", fontsize=16, y=1.02)  # Adjust y to prevent overlap
+
+                value_counts = {
+                    'Missing Values': len(self.df[self.df[i] == missing_value_type]),
+                    'Provided Values': len(self.df[self.df[i] != missing_value_type])
+                }
+                axes[0].bar(value_counts.keys(), value_counts.values())
+                axes[0].set_title(f'Volume of missing values of {i} in data set')
+
+                target_value_counts = {
+                    'Missing Values': self.df[self.df[i] == missing_value_type][self.target].sum() / value_counts['Missing Values'] * 100,
+                    'Provided Values': self.df[self.df[i] != missing_value_type][self.target].sum() / value_counts['Provided Values'] * 100
+                }
+                axes[1].bar(target_value_counts.keys(), target_value_counts.values(), color='red')
+                axes[1].set_title('Comparison of fraud percentage between missing and provided values')
+                axes[1].axhline(y=percent_fraud_total, color='black', linestyle='--')
+                axes[1].text(1, percent_fraud_total, 'overall fraud average', color='black', ha='center', va='bottom')
+            
+                # Adjust layout and show the plots
+                plt.tight_layout()
+                plt.show()
+
 
 
