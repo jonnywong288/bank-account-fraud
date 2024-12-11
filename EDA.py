@@ -337,20 +337,33 @@ class OddsRatios:
             if v in self.missing_values:
                 df_no_nulls = self.df[self.df[v] != -1]
                 quantiles = [df_no_nulls[v].quantile(np.round(i, 1)) for i in np.linspace(0, 1, 11)]
+
+                for i in range(len(quantiles))[:-1]:
+                    quantile = df_no_nulls[(df_no_nulls[v] >= quantiles[i]) & (df_no_nulls[v] < quantiles[i+1])]
+                    not_quantile = df_no_nulls[(df_no_nulls[v] < quantiles[i]) | (df_no_nulls[v] >= quantiles[i+1])]
+
+                    quantile_and_target = quantile[self.target].sum()
+                    quantile_and_not_target = len(quantile) - quantile_and_target
+                    not_quantile_and_target = not_quantile[self.target].sum()
+                    not_quantile_and_not_target = len(not_quantile) - not_quantile_and_target
+
+                    odds_ratio = (quantile_and_target / quantile_and_not_target) / (not_quantile_and_target / not_quantile_and_not_target)
+                    quantile_odds[f'{i+1}/10'] = odds_ratio
+                    
             else:
                 quantiles = [self.df[v].quantile(np.round(i, 1)) for i in np.linspace(0, 1, 11)]
             
-            for i in range(len(quantiles))[:-1]:
-                quantile = self.df[(self.df[v] >= quantiles[i]) & (self.df[v] < quantiles[i+1])]
-                not_quantile = self.df[(self.df[v] < quantiles[i]) | (self.df[v] >= quantiles[i+1])]
+                for i in range(len(quantiles))[:-1]:
+                    quantile = self.df[(self.df[v] >= quantiles[i]) & (self.df[v] < quantiles[i+1])]
+                    not_quantile = self.df[(self.df[v] < quantiles[i]) | (self.df[v] >= quantiles[i+1])]
 
-                quantile_and_target = quantile[self.target].sum()
-                quantile_and_not_target = len(quantile) - quantile_and_target
-                not_quantile_and_target = not_quantile[self.target].sum()
-                not_quantile_and_not_target = len(not_quantile) - not_quantile_and_target
+                    quantile_and_target = quantile[self.target].sum()
+                    quantile_and_not_target = len(quantile) - quantile_and_target
+                    not_quantile_and_target = not_quantile[self.target].sum()
+                    not_quantile_and_not_target = len(not_quantile) - not_quantile_and_target
 
-                odds_ratio = (quantile_and_target / quantile_and_not_target) / (not_quantile_and_target / not_quantile_and_not_target)
-                quantile_odds[f'{i+1}/10'] = odds_ratio
+                    odds_ratio = (quantile_and_target / quantile_and_not_target) / (not_quantile_and_target / not_quantile_and_not_target)
+                    quantile_odds[f'{i+1}/10'] = odds_ratio
             
             quantile_odds_df = pd.DataFrame({
                 'Quantile': quantile_odds.keys(),
