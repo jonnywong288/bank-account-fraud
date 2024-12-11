@@ -48,6 +48,13 @@ class FeatureSignificance:
         }
         print(pd.Series(info_summary))
 
+    def correlations(self, variables):
+        df_corr = self.df[variables].corr()
+        plt.figure(figsize=(16, 16))
+        sns.heatmap(df_corr, xticklabels=df_corr.columns.values,  annot=True, yticklabels = df_corr.columns.values)
+        plt.title('Correlation Matrix of independent variables')
+        plt.show()
+
 
     def nominal_multi_category(self, variables):
 
@@ -486,9 +493,9 @@ class FeatureVisualisation:
             fig.suptitle(f"{i}", fontsize=16, y=1.02)  # Adjust y to prevent overlap
 
             # Density Plot
-            sns.kdeplot(data=self.df, x=i, hue=self.target, fill=True, common_norm=False, alpha=0.5, ax=axes[0])
+            sns.kdeplot(data=self.df, x=i, hue=self.target, fill=True, common_norm=False, alpha=0.5, ax=axes[0])       
             axes[0].set_title(f"Density Plot of {i}")
-            
+
             # Boxplot
             sns.boxplot(data=self.df, x=self.target, y=i, ax=axes[1])
             axes[1].set_title(f"Boxplot of {i} by {self.target}")
