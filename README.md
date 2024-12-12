@@ -1,3 +1,8 @@
+## Downloading Data
+
+Before running the script, ensure you have downloaded the Base.csv file from  
+https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022
+
 ## Generating the EDA Report
 
 Before running the script, ensure you have the required dependencies installed. You can do this by:
