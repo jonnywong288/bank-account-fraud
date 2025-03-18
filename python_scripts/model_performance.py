@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime
 import os
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, precision_recall_curve
-
+import joblib
 
 def generate_df_summary(model, y_test, y_pred, label, threshold=0.5):
 
@@ -56,3 +56,12 @@ def predict_max_f1(model, X_test, y_test):
     y_pred_adjusted = (y_proba >= best_threshold).astype(int)
 
     return y_pred_adjusted, best_threshold
+
+def save_model(search, model_name):
+    os.makedirs(f'saved_models/{model_name}', exist_ok=True)
+
+    results_df = pd.DataFrame(search.cv_results_)
+    results_df = results_df.sort_values('rank_test_score').reset_index(drop=True)
+    results_df.to_csv(f'saved_models/{model_name}/results.csv')
+    joblib.dump(search.best_estimator_, f"saved_models/{model_name}/best_model.pkl")
+    print('Random search results and best model saved.')
