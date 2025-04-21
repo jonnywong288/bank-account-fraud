@@ -7,7 +7,7 @@ OUTPUT_DIR="output"
 
 # Check if the notebook file exists
 if [ ! -f "$EDA_NOTEBOOK" ]; then
-    echo "Error: EDA notebook '$EDA_NOTEBOOK' not found!"
+    echo "Error: EDA notebook '$EDA_NOTEBOOK' not found."
     exit 1
 fi
 
