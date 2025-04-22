@@ -11,3 +11,6 @@ https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022
 - Oversampling for Class Imbalance (data_restructuring.ipynb)
 - Model Training and Hyperparameter Tuning (model_training.ipynb)
 - Model Evaluation and Business Impact (model_evaluation.ipynb)
+
+### Overview of workflow:
+Please see .html file coming soon...
