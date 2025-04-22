@@ -1,4 +1,4 @@
-## Bank Account Fraud ML Example Project
+## Bank Account Fraud ML (Example Binary Classification Project)
 
 ### Data Used: Bank Account Fraud Dataset Suite (NeurIPS 2022)
 Download Base.csv using the following link:
