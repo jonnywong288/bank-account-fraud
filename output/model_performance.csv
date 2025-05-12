@@ -1,11 +1,16 @@
 Name,Date,Precision,Recall,F1-Score,True Negatives,False Positives,False Negatives,True Positives,objective,base_score,booster,callbacks,colsample_bylevel,colsample_bynode,colsample_bytree,device,early_stopping_rounds,enable_categorical,eval_metric,feature_types,gamma,grow_policy,importance_type,interaction_constraints,learning_rate,max_bin,max_cat_threshold,max_cat_to_onehot,max_delta_step,max_depth,max_leaves,min_child_weight,missing,monotone_constraints,multi_strategy,n_estimators,n_jobs,num_parallel_tree,random_state,reg_alpha,reg_lambda,sampling_method,scale_pos_weight,subsample,tree_method,validate_parameters,verbosity,proba_threshold
-baseline model,2025-04-23,0.44,0.04,0.07,106651,67,1398,52,binary:logistic,,,,,,,,,False,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.5
-baseline model threshold optimised,2025-04-23,0.19,0.26,0.22,105155,1563,1076,374,binary:logistic,,,,,,,,,False,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.103084594
-baseline model with 10:1 resampling,2025-04-23,0.39,0.05,0.08,106612,106,1383,67,binary:logistic,,,,,,,,,False,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.5
-baseline model with 10:1 resampling threshold optimised,2025-04-23,0.18,0.31,0.23,104682,2036,1007,443,binary:logistic,,,,,,,,,False,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.1169496
-baseline model with 4:1 resampling,2025-04-23,0.3,0.08,0.13,106447,271,1333,117,binary:logistic,,,,,,,,,False,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.5
-baseline model with 4:1 resampling threshold optimised,2025-04-23,0.17,0.3,0.22,104591,2127,1018,432,binary:logistic,,,,,,,,,False,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.15438889
-baseline model with 2:1 resampling,2025-04-23,0.27,0.1,0.14,106330,388,1307,143,binary:logistic,,,,,,,,,False,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.5
-baseline model with 2:1 resampling threshold optimised,2025-04-23,0.16,0.3,0.21,104548,2170,1022,428,binary:logistic,,,,,,,,,False,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.189023
-baseline model with 1:1 resampling,2025-04-23,0.22,0.12,0.16,106113,605,1276,174,binary:logistic,,,,,,,,,False,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.5
-baseline model with 1:1 resampling threshold optimised,2025-04-23,0.16,0.3,0.21,104408,2310,1019,431,binary:logistic,,,,,,,,,False,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.22488369
+baseline model,2025-03-18,0.44,0.04,0.07,106651,67,1398,52,binary:logistic,,,,,,,,,FALSE,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.5
+baseline model threshold optimised,2025-03-18,0.19,0.26,0.22,105155,1563,1076,374,binary:logistic,,,,,,,,,FALSE,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.103084594
+baseline model with 10:1 resampling,2025-03-18,0.39,0.05,0.08,106612,106,1383,67,binary:logistic,,,,,,,,,FALSE,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.5
+baseline model with 10:1 resampling threshold optimised,2025-03-18,0.18,0.31,0.23,104682,2036,1007,443,binary:logistic,,,,,,,,,FALSE,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.1169496
+baseline model with 4:1 resampling,2025-03-18,0.3,0.08,0.13,106447,271,1333,117,binary:logistic,,,,,,,,,FALSE,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.5
+baseline model with 4:1 resampling threshold optimised,2025-03-18,0.17,0.3,0.22,104591,2127,1018,432,binary:logistic,,,,,,,,,FALSE,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.15438889
+baseline model with 2:1 resampling,2025-03-18,0.27,0.1,0.14,106330,388,1307,143,binary:logistic,,,,,,,,,FALSE,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.5
+baseline model with 2:1 resampling threshold optimised,2025-03-18,0.16,0.3,0.21,104548,2170,1022,428,binary:logistic,,,,,,,,,FALSE,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.189023
+baseline model with 1:1 resampling,2025-03-18,0.22,0.12,0.16,106113,605,1276,174,binary:logistic,,,,,,,,,FALSE,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.5
+baseline model with 1:1 resampling threshold optimised,2025-03-18,0.16,0.3,0.21,104408,2310,1019,431,binary:logistic,,,,,,,,,FALSE,auc,,,,,,,,,,,,,,,,,,,,0,,,,,,,,,0.22488369
+random_search_99:1,2025-03-19,0.2,0.33,0.25,104749,1969,966,484,binary:logistic,,,,,,0.5,,15,FALSE,auc,,1,,,,0.05,,,,1,4,,7,,,,1000,,,,0,0.1,,5,0.7,,,,0.28680915
+random_search_10:1,2025-03-19,0.19,0.29,0.23,104926,1792,1024,426,binary:logistic,,,,,,1.0,,15,FALSE,auc,,5,,,,0.1,,,,0,8,,5,,,,1000,,,,1,10,,5,1.0,,,,0.46535406
+random_search_4:1,2025-03-20,0.17,0.27,0.21,104745,1973,1055,395,binary:logistic,,,,,,0.9,,15,FALSE,auc,,5,,,,0.1,,,,0,10,,3,,,,1000,,,,1,1,,5,1.0,,,,0.58518016
+random_search_2:1,2025-03-20,0.16,0.34,0.22,104130,2588,963,487,binary:logistic,,,,,,1.0,,15,FALSE,auc,,0.5,,,,0.2,,,,5,10,,1,,,,1000,,,,1,100,,25,0.5,,,,0.8175979
+random_search_1:1,2025-03-20,0.17,0.3,0.21,104508,2210,1013,437,binary:logistic,,,,,,1.0,,15,FALSE,auc,,0.5,,,,0.2,,,,5,10,,1,,,,1000,,,,1,100,,25,0.5,,,,0.868932
