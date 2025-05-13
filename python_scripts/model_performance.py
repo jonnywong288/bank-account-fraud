@@ -32,10 +32,18 @@ def generate_df_summary(model, y_test, y_pred, label, threshold=0.5):
     performance_dict['proba_threshold'] = threshold
 
     file_path = 'output/model_performance.csv'
-    file_exists = os.path.isfile(file_path)
-    df = pd.DataFrame([performance_dict])
+    mp = pd.read_csv(file_path)
+    
+    # Drop empty or all-NA keys to avoid the FutureWarning
+    filtered_dict = {k: v for k, v in performance_dict.items() if k in mp.columns}
+    
+    # Create a DataFrame with the same columns as `mp`, and set missing keys to None
+    new_row = pd.DataFrame([{col: filtered_dict.get(col, None) for col in mp.columns}])
+    
+    # Append the new row
+    mp = pd.concat([mp, new_row], ignore_index=True)
 
-    df.to_csv(file_path, mode='a', header=not file_exists, index=False)
+    mp.to_csv(file_path, index=False)
 
 
 def predict_max_f1(model, X_test, y_test):
