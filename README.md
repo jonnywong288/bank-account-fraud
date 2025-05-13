@@ -10,6 +10,6 @@ https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022
 - Feature Engineering (feature_engineering.ipynb)
 - Oversampling for Class Imbalance (data_restructuring.ipynb)
 - Model Training and Hyperparameter Tuning (model_training.ipynb)
-- Final Round of Hyperparameter Tuning and Training Final Model (final_model_training.ipynb)
+- Final Round of Hyperparameter Tuning and Training of Final Model (final_model_training.ipynb)
 - Model Evaluation and Business Impact (model_evaluation.ipynb)
 
